@@ -22,11 +22,12 @@ class App extends React.Component {
   getCSRF = () => {
     axios.get('api/csrf/')
       .then((res) => {
+        // Should get from cookie
         let csrfToken = res.headers["x-csrftoken"];
         this.setState({csrf: csrfToken});
-        console.log(csrfToken);
+        console.log('CSRF: ' + csrfToken);
       })
-      .then(res => console.log(res))
+      .catch(err => console.log(err))
   }
 
   getSession = () => {
@@ -36,13 +37,13 @@ class App extends React.Component {
       if (res.data.isAuthenticated) {
         this.setState({isAuthenticated: true});
       }
-      else {
-        this.setState({isAuthenticated: false});
-        this.getCSRF();
-      }
     })
     .catch((err) => {
       console.log(err);
+      if (err.response.status === 403) {
+        this.setState({isAuthenticated: false});
+        this.getCSRF();
+      }
     });
   }
 
